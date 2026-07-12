@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:wght@300;400;500;600&family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+@theme{
+  --color-primary: #5f6FFF;
+}
+
+*{
+  font-family: Outfit;
+}
+
+.grid-cols-auto {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.active hr{
+  @apply block
+}
+
+::-webkit-scrollbar{
+  @apply hidden
+}
+
+.hr-gray {
+  border: 1px solid #e0e0e0;
+}
+
+@media (max-width:740px) {
+  .active p{
+    @apply text-white bg-primary
+  }
+  
+}
