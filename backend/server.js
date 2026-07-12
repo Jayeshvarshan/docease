@@ -18,16 +18,25 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 let dbReady = false;
+let dbInitPromise = null;
+
+function ensureDbInit() {
+  if (!dbInitPromise) {
+    dbInitPromise = initDB()
+      .then(() => { dbReady = true; })
+      .catch((err) => { console.error("DB init failed:", err.message); });
+  }
+  return dbInitPromise;
+}
+
+ensureDbInit();
 
 app.use(async (req, res, next) => {
   if (!dbReady) {
-    try {
-      await initDB();
-      dbReady = true;
-    } catch (err) {
-      console.error("DB init failed:", err.message);
-      return res.status(503).json({ success: false, message: "Database not ready" });
-    }
+    await ensureDbInit();
+  }
+  if (!dbReady) {
+    return res.status(503).json({ success: false, message: "Database not ready" });
   }
   next();
 });
