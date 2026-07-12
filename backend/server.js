@@ -27,7 +27,9 @@ app.use("/api/doctor", doctorRouter);
 app.use("/api/user", userRouter);
 
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, dbReady, dbError });
+  const dbUrl = process.env.DATABASE_URL;
+  const masked = dbUrl ? dbUrl.substring(0, 20) + "..." : "NOT SET";
+  res.json({ success: true, dbReady, dbError, dbUrlPreview: masked });
 });
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
