@@ -4,15 +4,18 @@ let pool = null;
 
 const getPool = () => {
   if (!pool) {
-    pool = mysql.createPool({
-      uri: process.env.DATABASE_URL,
-      ssl: process.env.DATABASE_URL?.includes("localhost")
-        ? undefined
-        : { rejectUnauthorized: false },
+    const url = process.env.DATABASE_URL;
+    const isLocal = url?.includes("localhost");
+
+    const config = {
+      uri: url,
       waitForConnections: true,
       connectionLimit: 5,
       queueLimit: 0,
-    });
+      ssl: isLocal ? undefined : { rejectUnauthorized: true },
+    };
+
+    pool = mysql.createPool(config);
   }
   return pool;
 };
