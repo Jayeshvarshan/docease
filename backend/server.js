@@ -18,17 +18,18 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 let dbReady = false;
+let dbError = null;
 
 initDB()
   .then(() => { dbReady = true; })
-  .catch((err) => { console.error("DB init failed:", err.message); });
+  .catch((err) => { dbError = err.message; console.error("DB init failed:", err.message); });
 
 app.use("/api/admin", adminRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/user", userRouter);
 
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, dbReady });
+  res.json({ success: true, dbReady, dbError });
 });
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
