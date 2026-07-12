@@ -18,32 +18,18 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 let dbReady = false;
-let dbInitPromise = null;
 
-function ensureDbInit() {
-  if (!dbInitPromise) {
-    dbInitPromise = initDB()
-      .then(() => { dbReady = true; })
-      .catch((err) => { console.error("DB init failed:", err.message); });
-  }
-  return dbInitPromise;
-}
-
-ensureDbInit();
-
-app.use(async (req, res, next) => {
-  if (!dbReady) {
-    await ensureDbInit();
-  }
-  if (!dbReady) {
-    return res.status(503).json({ success: false, message: "Database not ready" });
-  }
-  next();
-});
+initDB()
+  .then(() => { dbReady = true; })
+  .catch((err) => { console.error("DB init failed:", err.message); });
 
 app.use("/api/admin", adminRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/user", userRouter);
+
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, dbReady });
+});
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
 app.use(express.static(frontendPath));
