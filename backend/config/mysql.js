@@ -3,23 +3,23 @@ import mysql from "mysql2/promise";
 let pool = null;
 
 const getPool = () => {
-  if (!pool) {
-    const url = process.env.DATABASE_URL;
-    const isLocal = url?.includes("localhost");
+  if (pool) return pool;
 
-    const config = {
-      uri: url,
-      waitForConnections: true,
-      connectionLimit: 5,
-      queueLimit: 0,
-    };
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is not set");
 
-    if (!isLocal) {
-      config.ssl = { rejectUnauthorized: false };
-    }
+  const isLocal = url.includes("localhost");
 
-    pool = mysql.createPool(config);
-  }
+  const config = {
+    uri: url,
+    waitForConnections: true,
+    connectionLimit: 5,
+    queueLimit: 0,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    connectTimeout: 15000,
+  };
+
+  pool = mysql.createPool(config);
   return pool;
 };
 
@@ -33,6 +33,9 @@ const initDB = async () => {
   const p = getPool();
 
   try {
+    await p.query("SELECT 1");
+    console.log("MySQL connected");
+
     await p.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(64) PRIMARY KEY,
@@ -88,6 +91,7 @@ const initDB = async () => {
     console.log("MySQL tables ready");
   } catch (err) {
     console.error("DB init error:", err.message);
+    pool = null;
     throw err;
   }
 };
